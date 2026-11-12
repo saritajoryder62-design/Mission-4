@@ -1,3 +1,5 @@
 node_modules
 .env
 dist
+# Policy PDFs, not needed for this mission yet
+Backend/docs/
