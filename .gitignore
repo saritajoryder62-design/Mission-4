@@ -3,3 +3,10 @@ node_modules
 dist
 # Policy PDFs, not needed for this mission yet
 Backend/docs/
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
