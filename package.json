@@ -1,0 +1,23 @@
+{
+  "name": "mission-4",
+  "version": "1.0.0",
+  "description": "An AI chatbot that asks the user a few questions about their vehicle and needs, then recommends the most suitable insurance policy. It's built with a React frontend and an Express backend that uses Google Gemini.",
+  "main": "index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/saritajoryder62-design/Mission-4.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/saritajoryder62-design/Mission-4/issues"
+  },
+  "homepage": "https://github.com/saritajoryder62-design/Mission-4#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.65.1",
+    "@types/node": "^26.6.6"
+  }
+}
