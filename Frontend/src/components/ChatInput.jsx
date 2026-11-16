@@ -60,6 +60,7 @@ function ChatInput({ onSend, disabled }) {
         ref={inputRef}
         className={styles.input}
         type="text"
+        aria-label="Type your message"   // screen readers (and tests) need a name; the placeholder changes and isn't a label
         value={text}
         onChange={(e) => setText(e.target.value)}
         placeholder={isListening ? "Listening... speak now" : "Type your answer..."}
