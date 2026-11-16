@@ -2,11 +2,11 @@
 .form {
   display: flex;
   gap: 8px;
-  margin-top: 12px;
 }
 
 .input {
   flex: 1;
+  min-width: 0;          /* lets the box shrink on narrow phones so Send isn't pushed off the edge */
   padding: 12px 14px;
   border: 1px solid #e2e8f0;
   border-radius: 999px;

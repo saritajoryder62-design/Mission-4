@@ -1,5 +1,5 @@
 // src/components/ChatInput.jsx
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import styles from "./ChatInput.module.css";
 
 // The browser's built-in speech-to-text tool.
@@ -11,6 +11,13 @@ function ChatInput({ onSend, disabled }) {
   const [text, setText] = useState("");
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef(null);   // remembers the speech tool between renders
+  const inputRef = useRef(null);         // the text box
+
+  // When the chat opens, and each time Tina finishes replying,
+  // put the cursor in the text box so the user can type straight away
+  useEffect(() => {
+    if (!disabled) inputRef.current.focus();
+  }, [disabled]);
 
   function handleSubmit(e) {
     e.preventDefault();              // stop the page from reloading
@@ -50,6 +57,7 @@ function ChatInput({ onSend, disabled }) {
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
       <input
+        ref={inputRef}
         className={styles.input}
         type="text"
         value={text}
