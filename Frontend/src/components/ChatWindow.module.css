@@ -1,10 +1,9 @@
 /* src/components/ChatWindow.module.css */
 .window {
-  height: 450px;
+  flex: 1;                   /* fills the space between the panel header and the input */
+  min-height: 0;             /* lets it shrink inside the panel so it can scroll */
   overflow-y: auto;          /* scrolls when messages fill up */
   padding: 16px;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
   background: white;
 }
 

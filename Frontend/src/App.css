@@ -1,6 +1,176 @@
 /* src/App.css */
 .app {
-  max-width: 600px;
-  margin: 40px auto;
   font-family: system-ui, sans-serif;
+}
+
+/* ---------- 1. Round chat icon in the bottom-right corner ---------- */
+.chat-launcher {
+  position: fixed;          /* stays in the corner even when the page scrolls */
+  right: 24px;
+  bottom: 24px;
+  z-index: 1000;            /* sits on top of everything else */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  border: none;
+  border-radius: 50%;
+  background: #a3359e;
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(163, 53, 158, 0.35);
+  transition: transform 0.2s;
+}
+.chat-launcher:hover { transform: scale(1.06); }
+.chat-launcher:focus-visible { outline: 3px solid #a3359e; outline-offset: 3px; }
+
+/* ---------- 2. Pop-up speech bubble above the icon ---------- */
+.chat-popup {
+  position: fixed;
+  right: 24px;
+  bottom: 100px;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  width: 280px;
+  padding: 14px 8px 14px 16px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px 16px 4px 16px;   /* square-ish corner points at the icon */
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.12);
+  transform-origin: bottom right;
+  animation: chat-pop 0.25s ease-out;
+}
+
+.chat-popup-text {
+  flex: 1;
+  padding: 0;
+  border: none;
+  background: none;
+  color: #0f172a;
+  font: inherit;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  text-align: left;
+  cursor: pointer;
+}
+.chat-popup-text strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #a3359e;
+}
+
+.chat-popup-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: #64748b;
+  cursor: pointer;
+}
+.chat-popup-close:hover { background: #f1f5f9; }
+
+.chat-popup-text:focus-visible,
+.chat-popup-close:focus-visible {
+  outline: 2px solid #a3359e;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ---------- 3. The chat panel ---------- */
+.chat-panel {
+  position: fixed;
+  right: 24px;
+  bottom: 100px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;   /* header on top, messages in the middle, input at the bottom */
+  width: 380px;
+  height: 580px;
+  max-height: calc(100dvh - 124px);   /* never taller than the screen */
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.15);
+  overflow: hidden;
+  transform-origin: bottom right;
+  animation: chat-pop 0.2s ease-out;
+}
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: #a3359e;
+  color: white;
+}
+.chat-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+.chat-subtitle {
+  margin: 2px 0 0;
+  font-size: 0.85rem;
+}
+
+.chat-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: white;
+  cursor: pointer;
+}
+.chat-close:hover { background: rgba(255, 255, 255, 0.15); }
+.chat-close:focus-visible { outline: 2px solid white; outline-offset: 2px; }
+
+.chat-footer {
+  padding: 12px;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* Grows in from the corner */
+@keyframes chat-pop {
+  from { opacity: 0; transform: scale(0.9) translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ---------- Phones: panel and bubble use the full width ---------- */
+@media (max-width: 480px) {
+  .chat-launcher { right: 16px; bottom: 16px; }
+
+  .chat-panel {
+    left: 12px;
+    right: 12px;
+    bottom: 88px;
+    width: auto;
+    max-height: calc(100dvh - 100px);
+  }
+
+  .chat-popup {
+    left: 16px;
+    right: 16px;
+    bottom: 88px;
+    width: auto;
+  }
+}
+
+/* People who turn off animations in their OS settings get no pop or grow effects */
+@media (prefers-reduced-motion: reduce) {
+  .chat-panel,
+  .chat-popup { animation: none; }
+  .chat-launcher { transition: none; }
 }
