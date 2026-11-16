@@ -1,0 +1,17 @@
+/* src/components/MessageBubble.module.css */
+.row {
+  display: flex;
+  margin: 8px 0;
+}
+.rowUser { justify-content: flex-end; }
+.rowBot  { justify-content: flex-start; }
+
+.bubble {
+  max-width: 75%;
+  padding: 10px 14px;
+  border-radius: 16px;
+  line-height: 1.4;
+  white-space: pre-wrap; /* keeps line breaks in the bot's replies */
+}
+.user { background: #e59dea; color: white; border-bottom-right-radius: 4px; }
+.bot  { background: #f1f5f9; color: #0f172a; border-bottom-left-radius: 4px; }

@@ -1,0 +1,71 @@
+/* src/components/ChatInput.module.css */
+.form {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.input {
+  flex: 1;
+  padding: 12px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  font-size: 1rem;
+  outline: none;
+}
+.input:focus { border-color: #e48fe0; }
+
+.button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 999px;
+  background: #e48fe0;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Round microphone button, sits between the input and Send */
+.micButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 50%;
+  background: white;
+  color: #64748b;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+.micButton:hover { border-color: #e48fe0; color: #a3359e; }
+.micButton:focus-visible { outline: 2px solid #a3359e; outline-offset: 2px; }
+.micButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* While listening: pink fill plus a soft pulsing ring */
+.listening {
+  border-color: #e48fe0;
+  background: #fce7fb;
+  color: #a3359e;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(228, 143, 224, 0.6); }
+  50%      { box-shadow: 0 0 0 8px rgba(228, 143, 224, 0); }
+}
+
+/* People who turn off animations in their OS settings get a still button */
+@media (prefers-reduced-motion: reduce) {
+  .listening { animation: none; }
+}
