@@ -11,5 +11,6 @@ RUN npm ci --omit=dev
 # Copy the rest of the code (.dockerignore skips node_modules and .env)
 COPY . .
 
-EXPOSE 3000
+# index.js listens on 5000 (process.env.PORT || 5000)
+EXPOSE 5000
 CMD ["node", "index.js"]
