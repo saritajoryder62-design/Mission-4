@@ -1,7 +1,7 @@
 # .github/workflows/ci.yml
 # Runs on every push and pull request to main, or by hand from the Actions tab:
-#   1. Backend tests (Jest)        – if you have a "test" script
-#   2. Frontend tests (Playwright) – Chromium only, Gemini is faked
+#   1. Backend tests               – none yet: Backend has no "test" script, so this job runs no tests
+#   2. Frontend tests (Playwright) – tests/test-tina.spec.js, Chromium only, Gemini is faked
 #   3. Docker build                – proves both images still build
 
 name: CI
