@@ -76,7 +76,7 @@ Start the backend:
 npm run dev
 ```
 
-The backend runs at `http://localhost:5000`. The frontend calls this port, so don't set a different `PORT` in `.env`.
+The backend runs at `http://localhost:5000`. The Vite dev server passes the frontend's `/api` requests on to this port, so don't set a different `PORT` in `.env`.
 
 ### 3. Set up the frontend
 
@@ -109,6 +109,7 @@ npx playwright show-report                # opens the HTML report
 | Send a message | The user's message and Tina's reply both appear |
 | Backend error | A 500 error shows "Tina is having trouble right now. Please try again." |
 | Error that isn't JSON | The same friendly message shows, not a raw JSON error |
+| Backend down | A 502 from the Vite proxy shows "I can't reach the server right now. Please try again in a moment." |
 | Escape key | Pressing Escape closes the chat panel |
 
 The backend has no automated tests yet.
@@ -138,7 +139,7 @@ docker compose up --build   # build the images and start both containers
 docker compose down         # stop and remove the containers (the images are kept)
 ```
 
-The backend listens on port 5000, but `docker-compose.yml` on `main` still maps port 3000. Until pull request #7 (`Fix/docker-ports`) is merged, the chat can't reach the backend when it runs in Docker.
+The app runs at `http://localhost:5173`. The browser only talks to the frontend container. Vite passes `/api` requests on to the backend container at `http://backend:5000`, set by `API_TARGET` in `docker-compose.yml`.
 
 ## CI
 
@@ -227,12 +228,14 @@ GEMINI_API_KEY=your_api_key_here
 - **Playwright tests (PR #5, PR #6):** six browser tests in `tests/test-tina.spec.js`. Every test fakes the backend reply.
 - **CI (PR #6):** replaced the starter Playwright workflow with `.github/workflows/ci.yml`: backend tests, Playwright tests in Chromium, then a Docker build.
 - **Lint checks (`Feature/Husky-lint` branch):** added Husky and lint-staged to the root `package.json`. Every commit runs oxlint on the staged files. `npm run lint` in the root folder checks the whole project. Files in `Frontend/` also get the React rules from `Frontend/.oxlintrc.json`.
+- **API proxy (`Fix/api-proxy` branch):** the frontend now calls the relative URL `/api/chat` instead of `http://localhost:5000/api/chat`. The Vite dev server passes `/api` requests on to the backend: `localhost:5000` on my computer, and the backend container in Docker (`API_TARGET` in `docker-compose.yml`). When the backend is down, Vite answers 502, and the chat shows "I can't reach the server right now." I added a seventh Playwright test for this.
+- **Code review clean-up (`Fix/api-proxy` branch):** removed an unused `Frontend/nginx.conf`. `.gitignore` and both `.dockerignore` files now cover every `.env` file (`.env*`), not only `.env`.
 
 #### Problems I hit
 
 - **CI failed on `npm ci` in `Backend/`:** `lock file's @google/genai@3.2.0 does not satisfy @google/genai@1.52.0`. `package.json` and `package-lock.json` didn't match. I changed `package.json` to match the lock file, and CI passed.
 - **WebKit (Safari) tests failed with `spawn UNKNOWN` on my Windows machine.** I turned the WebKit project off in `playwright.config.js`. The tests run in Chromium and Firefox.
-- **Docker ports don't match:** the backend listens on port 5000, and the frontend calls port 5000, but `docker-compose.yml` maps port 3000. Pull request #7 (`Fix/docker-ports`) changes the Dockerfile and the compose file to port 5000. It is still open.
+- **Docker ports don't match:** the backend listens on port 5000, and the frontend calls port 5000, but `docker-compose.yml` maps port 3000. Pull request #7 (`Fix/docker-ports`) changes the Dockerfile and the compose file to port 5000. The API proxy fixes the chat in Docker on its own, because the browser no longer calls port 5000 directly.
 
 #### How I tested it
 
@@ -245,6 +248,12 @@ GEMINI_API_KEY=your_api_key_here
 | Pre-commit check stops a Frontend file that calls a React hook inside an `if` | Passed |
 | Pre-commit check lets a clean file through | Passed |
 | `npm run lint` over the whole project | Passed, 0 problems |
+| All 7 Playwright tests in Chromium and Firefox (14 runs), with the relative `/api/chat` URL | Passed |
+| Vite proxy sends `/api/chat` to `localhost:5000` (fake backend) | Passed |
+| Vite proxy sends `/api/chat` to the `API_TARGET` address (fake backend) | Passed |
+| Vite proxy answers 502 when the backend is down | Passed |
+| Docker: `/api/chat` on the frontend container reaches the backend container | Passed |
+| Docker: no `.env` file inside either image | Passed |
 
 #### Decisions
 
@@ -258,4 +267,4 @@ GEMINI_API_KEY=your_api_key_here
 - Add backend tests for `/api/chat`, with Gemini faked. The "Backend tests" job in CI passes now, but it runs no tests.
 - Check Tina's business rules by hand, because Gemini's replies change each time. For example, a truck owner should not be offered Mechanical Breakdown Insurance.
 - Run the lint check in CI too.
-- Merge pull request #7 to fix the Docker ports.
+- Merge pull request #7, so the backend's port mapping matches the port it listens on (5000).

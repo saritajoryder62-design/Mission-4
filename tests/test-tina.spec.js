@@ -4,6 +4,7 @@ import { test, expect } from '@playwright/test';
 const APP_URL = 'http://localhost:5173/';
 const OPT_IN_TEXT = /may I ask you a few personal questions/i;
 const TINA_ERROR = 'Tina is having trouble right now. Please try again.';
+const CANT_REACH = "I can't reach the server right now. Please try again in a moment.";
 
 // Safety net: fake the backend for EVERY test, so no test can ever call real Gemini.
 // A test that needs a different answer adds its own page.route(), which wins
@@ -93,6 +94,16 @@ test.describe('Tina chatbot', () => {
     // App.jsx falls back to its own message when it can't read the error as JSON
     await expect(panel.getByText(TINA_ERROR)).toBeVisible();
     await expect(panel.getByText(/not valid JSON/i)).toHaveCount(0);
+  });
+
+  test('shows a can\'t-reach message when the backend is down', async ({ page }) => {
+    // Vite's proxy answers 502 with an empty body when the backend isn't running
+    await page.route('**/api/chat', (route) => route.fulfill({ status: 502, body: '' }));
+
+    const panel = await openChat(page);
+    await sendMessage(panel, 'Yes');
+
+    await expect(panel.getByText(CANT_REACH)).toBeVisible();
   });
 
   test('pressing Escape closes the chat panel', async ({ page }) => {

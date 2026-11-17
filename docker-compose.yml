@@ -10,5 +10,8 @@ services:
     build: ./Frontend
     ports:
       - "5173:5173"
+    environment:
+      # Vite passes /api requests to the backend container (see Frontend/vite.config.js)
+      - API_TARGET=http://backend:5000
     depends_on:
       - backend
