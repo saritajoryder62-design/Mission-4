@@ -158,7 +158,6 @@ The app runs at `http://localhost:5173`. The browser only talks to the frontend 
 | Package | Purpose |
 | --- | --- |
 | express | API server and routes |
-| cors | Allows the React app to call the API |
 | dotenv | Loads environment variables from `.env` |
 | @google/genai | Google Gemini SDK |
 | nodemon (dev) | Auto-restarts the server on save |

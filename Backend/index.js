@@ -1,5 +1,4 @@
 import express from "express";
-import cors from "cors";
 import dotenv from "dotenv";
 import { GoogleGenAI } from "@google/genai";
 
@@ -7,23 +6,16 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors());
+// No cors() needed: the browser only talks to Vite, and Vite's proxy passes /api on to us,
+// so every request the browser makes stays on the same origin.
 app.use(express.json());
-
-app.get("/", (req, res) => {
-  res.send("Backend is running 👌🤩✌️")
-  console.log("backend is working  this shows in the terminal only as we have just started the backend!!");
-});
-
 
 // ---------- Gemini setup ----------
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 // "flash-lite" replies in about 1 second. "gemini-3.5-flash" took 30-40 seconds.
 const MODEL = "gemini-3.5-flash-lite";
 
-
-//ai tina//
-
+// ---------- Tina's instructions ----------
 const systemInstruction = `
 You are Tina, a friendly AI car insurance consultant for a New Zealand company.
 
@@ -82,14 +74,12 @@ Finish by asking if they have any questions about the recommendation.
 ## Tone
 - Keep replies short, friendly and in plain English and professional
 - Use New Zealand spelling (e.g. "colour", "organise").
-- Be warm and suppportive. No emojis.
+- Be warm and supportive. No emojis.
 `;
-
-
 
 // ---------- Routes ----------
 app.get("/", (req, res) => {
-  res.send("Backend is running");
+  res.send("Backend is running 👌🤩✌️");
 });
 
 // POST /api/chat
@@ -124,38 +114,6 @@ app.post("/api/chat", async (req, res) => {
     res.status(500).json({ error: "Tina is having trouble right now. Please try again." });
   }
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//start server//
-
-// const PORT = process.env.PORT || 3000;
-
-// app.listen(PORT, () => {
-//   console.log(`Server running on http://localhost:${PORT}`);
-// });
 
 // ---------- Start server ----------
 const PORT = process.env.PORT || 5000;
