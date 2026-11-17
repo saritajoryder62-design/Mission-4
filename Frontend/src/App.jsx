@@ -4,7 +4,9 @@ import ChatWindow from "./components/ChatWindow";
 import ChatInput from "./components/ChatInput";
 import "./App.css";
 
-const API_URL = "http://localhost:5000/api/chat";
+// Relative URL: the request goes to the same server as the page (Vite),
+// and Vite passes it on to the backend (see the proxy in vite.config.js).
+const API_URL = "/api/chat";
 
 // Tina's first question is hard-coded here (not fetched from Gemini),
 // so it shows instantly and the wording is always exactly what the brief asks for.
@@ -13,6 +15,9 @@ const OPENING_QUESTION =
 
 // Shown when something goes wrong and we don't have a better message
 const FALLBACK_ERROR = "Tina is having trouble right now. Please try again.";
+
+// Shown when the backend can't be reached at all (not running, wrong port)
+const CANT_REACH = "I can't reach the server right now. Please try again in a moment.";
 
 function App() {
   // The conversation starts with Tina's opening question already in it
@@ -66,6 +71,11 @@ function App() {
       body: JSON.stringify(body),
     });
 
+    // 502 or 504 = the proxy (Vite) is up, but it couldn't reach the backend behind it
+    if (res.status === 502 || res.status === 504) {
+      throw new Error(CANT_REACH);
+    }
+
     // Not every error comes back as JSON (e.g. a proxy or server crash),
     // so read it safely instead of letting res.json() blow up.
     const data = await res.json().catch(() => ({}));
@@ -88,13 +98,10 @@ function App() {
       const reply = await askTina({ history, message: userText });
       setMessages((prev) => [...prev, { role: "model", text: reply }]);
     } catch (err) {
-      // fetch() throws a TypeError when the backend isn't reachable at all (not running, wrong port).
+      // fetch() throws a TypeError when the page's own server (Vite) isn't reachable at all.
       // Chrome calls it "Failed to fetch", Firefox "NetworkError when attempting to fetch resource",
       // Safari "Load failed", so we check the error type instead of the exact words.
-      const friendly =
-        err instanceof TypeError
-          ? "I can't reach the server right now. Please try again in a moment."
-          : err.message || FALLBACK_ERROR;
+      const friendly = err instanceof TypeError ? CANT_REACH : err.message || FALLBACK_ERROR;
       setMessages((prev) => [...prev, { role: "model", text: friendly }]);
     } finally {
       setIsLoading(false);
