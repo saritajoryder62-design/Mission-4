@@ -1,5 +1,7 @@
 node_modules
-.env
+# Every .env file (.env, .env.local, .env.production...), except the example
+.env*
+!.env.example
 dist
 # Policy PDFs, not needed for this mission yet
 Backend/docs/
