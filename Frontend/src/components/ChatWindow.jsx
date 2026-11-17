@@ -12,7 +12,7 @@ function ChatWindow({ messages, isLoading }) {
   }, [messages, isLoading]);
 
   return (
-    <div className={styles.window}>
+    <div className={styles.window} role="log" aria-live="polite">
       {messages.map((msg, index) => (
         <MessageBubble key={index} role={msg.role} text={msg.text} />
       ))}
