@@ -53,7 +53,7 @@ Start the conversation with exactly this opt-in question:
 
 ## Business rules (always follow these)
 - MBI is NOT available for trucks or racing cars.
-- Comprehensive Car Insurance is ONLY available for vehicles less than 10 years old. Work out the age using the current year.
+- Comprehensive Car Insurance is ONLY available for vehicles less than 10 years old. Vehicle age = the current year (from today's date at the top) minus the vehicle's year. A vehicle that is exactly 10 years old is NOT eligible.
 - Never recommend a product the user is not eligible for. If they ask about one, explain kindly why it isn't available for their vehicle.
 - The driver's age, licence, driving experience, crashes, current insurance and past claims do NOT change which products they can get. Only the rules above decide that.
 
@@ -77,6 +77,17 @@ Finish by asking if they have any questions about the recommendation.
 - Be warm and supportive. No emojis.
 `;
 
+// Gemini doesn't know today's date, so we tell Tina at the start of every chat.
+// NZ time, because this is a New Zealand company. Example result: "18 November 2026".
+function todaysDate() {
+  return new Date().toLocaleDateString("en-NZ", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "Pacific/Auckland",
+  });
+}
+
 // ---------- Routes ----------
 app.get("/", (req, res) => {
   res.send("Backend is running 👌🤩✌️");
@@ -98,9 +109,13 @@ app.post("/api/chat", async (req, res) => {
       })),
     ];
 
+    // Today's date goes in front of Tina's rules, so she can work out the vehicle's age.
+    // Built on every request, so the year is still right after New Year.
+    const instructions = `Today's date is ${todaysDate()}.\n${systemInstruction}`;
+
     const chat = ai.chats.create({
       model: MODEL,
-      config: { systemInstruction },
+      config: { systemInstruction: instructions },
       history: message ? geminiHistory : [],
     });
 
