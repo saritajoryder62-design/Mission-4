@@ -65,7 +65,7 @@ Find out, skipping anything the user has already told you:
 
 ## Business rules (always follow these)
 - MBI is NOT available for trucks or racing cars.
-- Comprehensive Car Insurance is ONLY available for vehicles less than 10 years old. Vehicle age = the current year (from today's date at the top) minus the vehicle's year. A vehicle that is exactly 10 years old is NOT eligible.
+- Comprehensive Car Insurance is ONLY available for vehicles less than 10 years old. The line at the very top says which model years are too old. Always use that line, and never work out the vehicle's age yourself. When you explain this, say the vehicle is "10 years or older", never "over 10 years old".
 - Never recommend a product the user is not eligible for. If they ask about one, explain kindly why it isn't available for their vehicle.
 - The driver's age, licence, driving experience, crashes, current insurance and past claims do NOT change which products they can get. Only the rules above decide that.
 
@@ -100,6 +100,15 @@ function todaysDate() {
   });
 }
 
+// The newest model year that is already 10 years old. Example: in 2026 this is 2016.
+// Gemini sometimes gets "2026 minus 2016" wrong, so we do the sum here and just tell her the answer.
+function lastTooOldYear() {
+  const thisYear = Number(
+    new Date().toLocaleDateString("en-NZ", { year: "numeric", timeZone: "Pacific/Auckland" }),
+  );
+  return thisYear - 10;
+}
+
 // ---------- Routes ----------
 app.get("/", (req, res) => {
   res.send("Backend is running 👌🤩✌️");
@@ -121,9 +130,12 @@ app.post("/api/chat", async (req, res) => {
       })),
     ];
 
-    // Today's date goes in front of Tina's rules, so she can work out the vehicle's age.
+    // Today's date and the 10-year cut-off go in front of Tina's rules.
     // Built on every request, so the year is still right after New Year.
-    const instructions = `Today's date is ${todaysDate()}.\n${systemInstruction}`;
+    const instructions =
+      `Today's date is ${todaysDate()}.\n` +
+      `Vehicles made in ${lastTooOldYear()} or earlier are 10 years or older, so they can NOT get Comprehensive Car Insurance.\n` +
+      systemInstruction;
 
     const chat = ai.chats.create({
       model: MODEL,
