@@ -1,5 +1,4 @@
 import express from "express";
-import cors from "cors";
 import dotenv from "dotenv";
 import { GoogleGenAI } from "@google/genai";
 
@@ -7,23 +6,16 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors());
+// No cors() needed: the browser only talks to Vite, and Vite's proxy passes /api on to us,
+// so every request the browser makes stays on the same origin.
 app.use(express.json());
-
-app.get("/", (req, res) => {
-  res.send("Backend is running 👌🤩✌️")
-  console.log("backend is working  this shows in the terminal only as we have just started the backend!!");
-});
-
 
 // ---------- Gemini setup ----------
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 // "flash-lite" replies in about 1 second. "gemini-3.5-flash" took 30-40 seconds.
 const MODEL = "gemini-3.5-flash-lite";
 
-
-//ai tina//
-
+// ---------- Tina's instructions ----------
 const systemInstruction = `
 You are Tina, a friendly AI car insurance consultant for a New Zealand company.
 
@@ -34,23 +26,35 @@ Start the conversation with exactly this opt-in question:
 - If they decline, thank them politely and end the conversation. Do not ask any more questions.
 
 ## How to ask questions
-- Ask ONE question at a time. Never ask two questions in one message.
-- Adapt each question to the user's previous answers.
-- Do NOT ask the user directly which insurance product they want.
-- Instead, uncover what you need to know, such as:
-  - vehicle type (car, ute, van, truck, motorbike, racing car)
-  - make, model and year
+
+### Step 1: the basics (your first message after the user agrees)
+Ask for these four things together in one short, friendly message. Use your own words, and a short list is fine:
+  - their age
+  - what vehicle they drive (make and model)
+  - what year the vehicle was made
+  - whether they already have car insurance in place
+If the user leaves any of these out, ask again for only the missing ones before moving on.
+If you can't tell the vehicle type (car, ute, van, truck, motorbike, racing car) from the make and model, ask. If you can tell, don't comment on it.
+
+### Step 2: their reason for changing
+- If they already have car insurance, ask if there is a specific reason they are looking to change.
+- If they don't have car insurance, skip this step.
+- Use their reason to shape your recommendation and your reasons for it, but never break the business rules.
+
+### Step 3: everything else, ONE question at a time
+From here on, ask ONE question per message. Never ask two questions in one message.
+Find out, skipping anything the user has already told you:
   - whether they want cover for their own car, or only for damage to other people's property
   - whether they are worried about mechanical breakdowns
-- Also ask about the main driver:
-  - their age
-  - their licence type (learner, restricted, full, or overseas licence)
+  - the main driver's licence type (learner, restricted, full, or overseas licence)
   - how many years they have been driving
   - whether they have ever been in a serious crash
-  - whether they already have car insurance in place
   - whether they have made any major insurance claims before
-- Ask about the vehicle first, then the driver.
-- If the user would rather not answer a driver question, accept that kindly and move on.
+
+### Always
+- Adapt each question to the user's previous answers.
+- Do NOT ask the user directly which insurance product they want.
+- If the user would rather not answer a question, accept that kindly and move on.
 - If an answer is unclear, ask a short follow-up to clarify before moving on.
 - If the user gives several details at once, don't ask for them again.
 
@@ -61,7 +65,7 @@ Start the conversation with exactly this opt-in question:
 
 ## Business rules (always follow these)
 - MBI is NOT available for trucks or racing cars.
-- Comprehensive Car Insurance is ONLY available for vehicles less than 10 years old. Work out the age using the current year.
+- Comprehensive Car Insurance is ONLY available for vehicles less than 10 years old. Vehicle age = the current year (from today's date at the top) minus the vehicle's year. A vehicle that is exactly 10 years old is NOT eligible.
 - Never recommend a product the user is not eligible for. If they ask about one, explain kindly why it isn't available for their vehicle.
 - The driver's age, licence, driving experience, crashes, current insurance and past claims do NOT change which products they can get. Only the rules above decide that.
 
@@ -82,14 +86,23 @@ Finish by asking if they have any questions about the recommendation.
 ## Tone
 - Keep replies short, friendly and in plain English and professional
 - Use New Zealand spelling (e.g. "colour", "organise").
-- Be warm and suppportive. No emojis.
+- Be warm and supportive. No emojis.
 `;
 
-
+// Gemini doesn't know today's date, so we tell Tina at the start of every chat.
+// NZ time, because this is a New Zealand company. Example result: "18 November 2026".
+function todaysDate() {
+  return new Date().toLocaleDateString("en-NZ", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "Pacific/Auckland",
+  });
+}
 
 // ---------- Routes ----------
 app.get("/", (req, res) => {
-  res.send("Backend is running");
+  res.send("Backend is running 👌🤩✌️");
 });
 
 // POST /api/chat
@@ -108,9 +121,13 @@ app.post("/api/chat", async (req, res) => {
       })),
     ];
 
+    // Today's date goes in front of Tina's rules, so she can work out the vehicle's age.
+    // Built on every request, so the year is still right after New Year.
+    const instructions = `Today's date is ${todaysDate()}.\n${systemInstruction}`;
+
     const chat = ai.chats.create({
       model: MODEL,
-      config: { systemInstruction },
+      config: { systemInstruction: instructions },
       history: message ? geminiHistory : [],
     });
 
@@ -124,38 +141,6 @@ app.post("/api/chat", async (req, res) => {
     res.status(500).json({ error: "Tina is having trouble right now. Please try again." });
   }
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//start server//
-
-// const PORT = process.env.PORT || 3000;
-
-// app.listen(PORT, () => {
-//   console.log(`Server running on http://localhost:${PORT}`);
-// });
 
 // ---------- Start server ----------
 const PORT = process.env.PORT || 5000;

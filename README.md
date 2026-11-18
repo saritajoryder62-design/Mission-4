@@ -16,7 +16,7 @@ An AI chatbot that asks the user a few questions about their vehicle and needs, 
 
 ```text
 Mission-4/
-├── .github/workflows/ci.yml   # CI: tests and Docker build on every push and PR to main
+├── .github/workflows/ci.yml   # CI: lint, tests and Docker build on every push and PR to main
 ├── .husky/pre-commit          # runs lint-staged before every commit
 ├── Backend/                   # Express API + Gemini (Tina)
 │   ├── index.js
@@ -128,7 +128,7 @@ Every `git commit` also runs `oxlint --fix --deny-warnings` on the staged JavaSc
 - Any error or warning that is left stops the commit and shows the file and line.
 - In VS Code, a stopped commit shows "pre-commit script failed". Click "Show Command Output" to see the problem.
 
-Fix the problem and commit again. Don't skip the check with `--no-verify`.
+Fix the problem and commit again. Don't skip the check with `--no-verify`. CI runs the same lint check on every push and pull request, so a skipped check still gets caught.
 
 ## Run it with Docker
 
@@ -147,9 +147,10 @@ The app runs at `http://localhost:5173`. The browser only talks to the frontend 
 
 | Job | What it does |
 | --- | --- |
+| Lint | Runs `npm run lint -- --deny-warnings` over the whole project, the same check as the pre-commit hook |
 | Backend tests | Runs `npm test` in `Backend/`. There are no backend tests yet, so this job runs nothing. |
 | Playwright tests | Starts the frontend and runs the Playwright tests in Chromium |
-| Docker build | Builds both images, only after both test jobs pass |
+| Docker build | Builds both images, only after lint and both test jobs pass |
 
 ## Dependencies
 
@@ -158,7 +159,6 @@ The app runs at `http://localhost:5173`. The browser only talks to the frontend 
 | Package | Purpose |
 | --- | --- |
 | express | API server and routes |
-| cors | Allows the React app to call the API |
 | dotenv | Loads environment variables from `.env` |
 | @google/genai | Google Gemini SDK |
 | nodemon (dev) | Auto-restarts the server on save |
